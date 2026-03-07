@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>5G NETWORK EATERY · MENU</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+  <link rel="icon" href="logo.png" type="image/png">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase.js"></script>
+</head>
+<body>
+
+  <!-- DESKTOP TOP NAVIGATION -->
+  <nav class="desktop-nav">
+    <div class="nav-container">
+      <a href="index.html" class="brand">
+        <img src="logo.png" alt="5G Eatery" class="logo-img">
+        <h1>5G EATERY</h1>
+      </a>
+      
+      <ul class="nav-menu">
+        <li><a href="index.html" class="nav-link">Home</a></li>
+        <li><a href="menu.html" class="nav-link active">Menu</a></li>
+        <li><a href="about.html" class="nav-link">About</a></li>
+        <li><a href="locations.html" class="nav-link">Locations</a></li>
+        <li><a href="#" class="nav-link" onclick="toggleCart()">Cart <span id="cartCount" class="cart-badge">0</span></a></li>
+        <li><button id="installAppBtn" class="btn-cta btn-install">Install App</button></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- MOBILE BOTTOM NAVIGATION -->
+  <nav class="mobile-bottom-nav">
+    <a href="index.html" class="mobile-nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+        <polyline points="9 22 9 12 15 12 15 22"/>
+      </svg>
+      <span>Home</span>
+    </a>
+    <a href="menu.html" class="mobile-nav-item active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M4 12h16M4 12a4 4 0 0 1-4-4V4h8v4a4 4 0 0 1-4 4z"/>
+        <path d="M20 12a4 4 0 0 0 4-4V4h-8v4a4 4 0 0 0 4 4z"/>
+        <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+      </svg>
+      <span>Menu</span>
+    </a>
+    <a href="about.html" class="mobile-nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="16" x2="12" y2="12"/>
+        <line x1="12" y1="8" x2="12.01" y2="8"/>
+      </svg>
+      <span>About</span>
+    </a>
+    <a href="locations.html" class="mobile-nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+        <circle cx="12" cy="10" r="3"/>
+      </svg>
+      <span>Locations</span>
+    </a>
+    <button id="mobileCartBtn" class="mobile-nav-item" onclick="toggleCart()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="9" cy="21" r="1"/>
+        <circle cx="20" cy="21" r="1"/>
+        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+      </svg>
+      <span>Cart <span id="mobileCartCount" class="cart-badge">0</span></span>
+    </button>
+    <button id="mobileInstallBtn" class="mobile-nav-item install-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="7 10 12 15 17 10"/>
+        <line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
+      <span>Install</span>
+    </button>
+  </nav>
+
+  <!-- Header -->
+  <header class="page-header">
+    <h2 class="page-title">PROTOCOL <span>LIST</span></h2>
+    <p style="color: var(--text-muted);">Select your preferred bandwidth consumption.</p>
+  </header>
+
+  <!-- Filter & Sort Controls -->
+  <div class="filter-container">
+    <div class="search-bar">
+      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      <input type="text" id="searchInput" class="search-input" placeholder="Search menu protocols..." aria-label="Search menu items">
+    </div>
+    <!-- Filter buttons are injected dynamically from DB categories by script -->
+    <div class="filter-buttons" id="filterButtons" role="group" aria-label="Filter by category">
+      <button class="filter-btn active" data-filter="all" aria-pressed="true">All</button>
+      <!-- Category buttons inserted here by JS -->
+    </div>
+  </div>
+
+  <!-- Menu Grid -->
+  <div class="container">
+    <div class="menu-grid" id="menuContainer">
+      <p style="color: var(--text-muted); grid-column: 1/-1; text-align: center;">Loading menu items...</p>
+    </div>
+  </div>
+
+  <!-- Cart Panel -->
+  <div class="cart-panel" id="cartPanel" style="display: none;">
+    <div class="cart-header">
+      <h3>SHOPPING CART</h3>
+      <button onclick="closeCart()" style="background:none;border:none;color:white;font-size:1.5rem;cursor:pointer;">&times;</button>
+    </div>
+    <div id="cartContainer">
+      <p style="color: var(--text-muted); text-align: center; padding: 2rem;">Your cart is empty</p>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toastContainer"></div>
+
+  <footer>
+    <div class="copyright">&copy; 2024 5G Network Eatery. All systems operational.</div>
+  </footer>
+
+  <script src="menu.js"></script>
+  <script>
+    // PWA Install Logic
+    let deferredPrompt;
+    const desktopInstallBtn = document.getElementById('installAppBtn');
+    const mobileInstallBtn = document.getElementById('mobileInstallBtn');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      if (desktopInstallBtn) {
+        desktopInstallBtn.style.display = 'block';
+      }
+      if (mobileInstallBtn) {
+        mobileInstallBtn.style.display = 'flex';
+      }
+    });
+
+    const installHandler = async (btn) => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        console.log(`User response to the install prompt: ${outcome}`);
+        deferredPrompt = null;
+        if (desktopInstallBtn) desktopInstallBtn.style.display = 'none';
+        if (mobileInstallBtn) mobileInstallBtn.style.display = 'none';
+      }
+    };
+
+    if (desktopInstallBtn) {
+      desktopInstallBtn.addEventListener('click', () => installHandler(desktopInstallBtn));
+    }
+    if (mobileInstallBtn) {
+      mobileInstallBtn.addEventListener('click', () => installHandler(mobileInstallBtn));
+    }
+
+    window.addEventListener('appinstalled', () => {
+      if(desktopInstallBtn) { desktopInstallBtn.style.display = 'none'; }
+      if(mobileInstallBtn) { mobileInstallBtn.style.display = 'none'; }
+      deferredPrompt = null;
+      console.log('PWA was installed');
+    });
+
+    // Sync cart counts between desktop and mobile
+    function updateCartCount(count) {
+      const desktopCount = document.getElementById('cartCount');
+      const mobileCount = document.getElementById('mobileCartCount');
+      if (desktopCount) desktopCount.textContent = count;
+      if (mobileCount) mobileCount.textContent = count;
+    }
+
+    // Override the cart update function in menu.js
+    window.updateCartCount = updateCartCount;
+  </script>
+</body>
+</html>

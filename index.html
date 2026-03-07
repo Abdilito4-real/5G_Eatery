@@ -1,0 +1,198 @@
+<!-- c:\Users\OWNER\Desktop\5G Eatery\index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>5G NETWORK EATERY · HOME</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+  <link rel="icon" href="logo.png" type="image/png">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- DESKTOP TOP NAVIGATION (visible only on desktop) -->
+  <nav class="desktop-nav">
+    <div class="nav-container">
+      <a href="index.html" class="brand">
+        <img src="logo.png" alt="5G Eatery" class="logo-img">
+        <h1>5G EATERY</h1>
+      </a>
+      
+      <ul class="nav-menu">
+        <li><a href="index.html" class="nav-link active">Home</a></li>
+        <li><a href="menu.html" class="nav-link">Menu</a></li>
+        <li><a href="about.html" class="nav-link">About</a></li>
+        <li><a href="locations.html" class="nav-link">Locations</a></li>
+        <li><button id="installAppBtn" class="btn-cta btn-install">Install App</button></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- MOBILE BOTTOM NAVIGATION (visible only on mobile) -->
+  <nav class="mobile-bottom-nav">
+    <a href="index.html" class="mobile-nav-item active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+        <polyline points="9 22 9 12 15 12 15 22"/>
+      </svg>
+      <span>Home</span>
+    </a>
+    <a href="menu.html" class="mobile-nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M4 12h16M4 12a4 4 0 0 1-4-4V4h8v4a4 4 0 0 1-4 4z"/>
+        <path d="M20 12a4 4 0 0 0 4-4V4h-8v4a4 4 0 0 0 4 4z"/>
+        <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+      </svg>
+      <span>Menu</span>
+    </a>
+    <a href="about.html" class="mobile-nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="16" x2="12" y2="12"/>
+        <line x1="12" y1="8" x2="12.01" y2="8"/>
+      </svg>
+      <span>About</span>
+    </a>
+    <a href="locations.html" class="mobile-nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+        <circle cx="12" cy="10" r="3"/>
+      </svg>
+      <span>Locations</span>
+    </a>
+    <button id="mobileInstallBtn" class="mobile-nav-item install-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="7 10 12 15 17 10"/>
+        <line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
+      <span>Install</span>
+    </button>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="speed-waves">
+      <div class="wave"></div><div class="wave"></div><div class="wave"></div><div class="wave"></div><div class="wave"></div>
+    </div>
+    <h2>Dining at<br><span>FULL BANDWIDTH</span></h2>
+    <p>Experience ultra-low latency flavors and high-speed service. The future of gastronomy is connected.</p>
+    <div class="hero-actions">
+      <a href="menu.html" class="btn-cta" style="padding: 1rem 3rem; font-size: 1rem;">View Menu</a>
+    </div>
+  </section>
+
+  
+  <!-- Footer -->
+  <footer>
+    <div class="footer-content">
+      <div class="footer-col">
+        <h4>5G EATERY</h4>
+        <p style="color: #777; font-size: 0.9rem; line-height: 1.6;">
+          Redefining the dining experience with technology and taste. Connected flavors for a modern world.
+        </p>
+      </div>
+      <div class="footer-col">
+        <h4>LINKS</h4>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="menu.html">Menu</a></li>
+          <li><a href="#">Reservations</a></li>
+          <li><a href="#">Careers</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>CONTACT</h4>
+        <ul>
+          <li><a href="#">support@5geatery.com</a></li>
+          <li><a href="#">1-800-5G-FOOD</a></li>
+          <li><a href="#">123 Tech Blvd, Silicon Valley</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>SOCIAL</h4>
+        <div class="social-links">
+          <a href="#" class="social-icon" aria-label="Facebook">
+            <svg viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
+          </a>
+          <a href="#" class="social-icon" aria-label="Twitter">
+            <svg viewBox="0 0 24 24"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path></svg>
+          </a>
+          <a href="#" class="social-icon" aria-label="Instagram">
+            <svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="copyright">
+      &copy; 2024 5G Network Eatery. All systems operational.
+    </div>
+  </footer>
+
+  <script>
+    // PWA Install Logic
+    let deferredPrompt;
+    const desktopInstallBtn = document.getElementById('installAppBtn');
+    const mobileInstallBtn = document.getElementById('mobileInstallBtn');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      if (desktopInstallBtn) {
+        desktopInstallBtn.style.display = 'block';
+      }
+      if (mobileInstallBtn) {
+        mobileInstallBtn.style.display = 'flex';
+      }
+    });
+
+    const installHandler = async (btn) => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        console.log(`User response to the install prompt: ${outcome}`);
+        deferredPrompt = null;
+        if (desktopInstallBtn) desktopInstallBtn.style.display = 'none';
+        if (mobileInstallBtn) mobileInstallBtn.style.display = 'none';
+      }
+    };
+
+    if (desktopInstallBtn) {
+      desktopInstallBtn.addEventListener('click', () => installHandler(desktopInstallBtn));
+    }
+    if (mobileInstallBtn) {
+      mobileInstallBtn.addEventListener('click', () => installHandler(mobileInstallBtn));
+    }
+
+    window.addEventListener('appinstalled', () => {
+      if(desktopInstallBtn) { desktopInstallBtn.style.display = 'none'; }
+      if(mobileInstallBtn) { mobileInstallBtn.style.display = 'none'; }
+      deferredPrompt = null;
+      console.log('PWA was installed');
+    });
+
+    // Set active nav item based on current page
+    const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+    
+    // Desktop nav
+    document.querySelectorAll('.nav-link').forEach(item => {
+      const href = item.getAttribute('href');
+      if (href && currentPage.includes(href)) {
+        item.classList.add('active');
+      }
+    });
+    
+    // Mobile nav
+    document.querySelectorAll('.mobile-nav-item').forEach(item => {
+      const href = item.getAttribute('href');
+      if (href && currentPage.includes(href)) {
+        item.classList.add('active');
+      } else if (!href && currentPage === 'index.html' && item.querySelector('span')?.textContent === 'Home') {
+        item.classList.add('active');
+      }
+    });
+  </script>
+</body>
+</html>

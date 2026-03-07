@@ -1,0 +1,23 @@
+{
+  "name": "5G Eatery",
+  "short_name": "5G Eatery",
+  "description": "The future of gastronomy, connected. Experience ultra-low latency flavors and high-speed service.",
+  "start_url": "splash.html",
+  "display": "standalone",
+  "background_color": "#0F0F10",
+  "theme_color": "#E10600",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
