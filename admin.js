@@ -120,11 +120,22 @@ const Auth = {
   },
 
   async requestNotificationPermission() {
-    if ('Notification' in window && Notification.permission === 'default') {
-      const permission = await Notification.requestPermission();
-      if (permission === 'granted') {
-        Toast.show('Notifications enabled for new orders', 'success');
-      }
+    if (!('Notification' in window)) return;
+
+    if (Notification.permission === 'granted') return; // already have it, silent
+
+    if (Notification.permission === 'denied') {
+      // Already blocked — don't spam, just log
+      console.warn('Notifications blocked. Admin can enable via browser settings.');
+      return;
+    }
+
+    // 'default' — ask the user
+    const permission = await Notification.requestPermission();
+    if (permission === 'granted') {
+      Toast.show('🔔 Push notifications enabled for new orders', 'success');
+    } else {
+      Toast.show('Notifications blocked — enable in browser settings to get new-order alerts', 'warning');
     }
   }
 };
@@ -182,6 +193,8 @@ const Dashboard = {
     
     document.getElementById('tab-live')?.classList.toggle('active', tab === 'live');
     document.getElementById('tab-history')?.classList.toggle('active', tab === 'history');
+
+    document.getElementById('refreshLiveBtn').style.display = tab === 'live' ? 'flex' : 'none';
 
     if (tab === 'history') OrderManager.fetchHistory();
   }
@@ -319,7 +332,18 @@ const MenuManager = {
 // ORDER MANAGEMENT
 // ==============================================================================
 const OrderManager = {
-  async fetchLive(highlightId = null) {
+  async fetchLive(highlightId = null, isManualRefresh = false) {
+    const refreshBtn = document.getElementById('refreshLiveBtn');
+    let svg;
+    if (isManualRefresh && refreshBtn) {
+        refreshBtn.disabled = true;
+        svg = refreshBtn.querySelector('svg');
+        if (svg) {
+          // The spin animation is defined in styles.css
+          svg.style.animation = 'spin 1s linear infinite';
+        }
+    }
+
     try {
       const { data: orders, error } = await supabaseClient
         .from('orders')
@@ -338,9 +362,19 @@ const OrderManager = {
 
       state.liveOrders = orders;
       this.renderLive(orders, highlightId);
+      if (isManualRefresh) {
+        Toast.show('Live orders refreshed', 'info');
+      }
     } catch (error) {
       console.error('Live orders error:', error);
       document.getElementById('ordersList').innerHTML = '<div class="error-state">Could not fetch orders</div>';
+    } finally {
+      if (isManualRefresh && refreshBtn) {
+        refreshBtn.disabled = false;
+        if (svg) {
+          svg.style.animation = '';
+        }
+      }
     }
   },
 
@@ -363,7 +397,7 @@ const OrderManager = {
       card.innerHTML = `
         <div class="order-header">
           <span class="order-table">Table ${order.table_number}</span>
-          <span class="order-time">${timeAgo}</span>
+          <span class="order-time" data-created-at="${order.created_at}">${timeAgo}</span>
         </div>
         <div class="order-items">
           ${order.order_items.map(item => `
@@ -380,10 +414,10 @@ const OrderManager = {
         </div>
         <div class="order-footer">
           ${order.status === 'preparing' ? `
-            <button class="btn-icon" onclick="OrderManager.print('${order.id}')" title="Print">${ICONS.print}</button>
+            <button class="btn-icon" onclick="event.stopPropagation(); OrderManager.print('${order.id}')" title="Print">${ICONS.print}</button>
           ` : ''}
           ${order.status === 'pending' ? `
-            <button class="btn-cta" onclick="OrderManager.updateStatus('${order.id}', 'preparing')">Accept</button>
+            <button class="btn-cta" onclick="event.stopPropagation(); OrderManager.updateStatus('${order.id}', 'preparing')">Accept</button>
           ` : ''}
           ${order.status === 'preparing' ? `
             <button class="btn-cta" onclick="OrderManager.updateStatus('${order.id}', 'completed')">Complete</button>
@@ -459,6 +493,28 @@ const OrderManager = {
     this.renderHistory();
   },
 
+  confirmDeleteHistory() {
+    Modal.confirm('DELETE ALL HISTORY?', 'This will permanently delete all completed and cancelled orders. This action cannot be undone.', () => {
+      this.deleteAllHistory();
+    });
+  },
+
+  async deleteAllHistory() {
+    Toast.show('Clearing order history...', 'info');
+    try {
+      const { error } = await supabaseClient
+        .from('orders')
+        .delete()
+        .in('status', ['completed', 'cancelled']);
+      
+      if (error) throw error;
+      Toast.show('Order history cleared', 'success');
+      this.fetchHistory();
+    } catch (error) {
+      Toast.show(`Failed to clear history: ${error.message}`, 'error');
+    }
+  },
+
   async updateStatus(orderId, status) {
     try {
       const { error } = await supabaseClient
@@ -483,9 +539,10 @@ const OrderManager = {
     
     channel
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, payload => {
-        Toast.show(`New order from Table ${payload.new.table_number}!`, 'info');
-        this.sendNotification(`New order from Table ${payload.new.table_number}!`);
-        this.fetchLive(payload.new.id);
+        const order = payload.new;
+        Toast.show(`New order from Table ${order.table_number}!`, 'info');
+        this.sendNotification(order);
+        this.fetchLive(order.id);
       })
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'orders' }, () => {
         this.fetchLive();
@@ -493,18 +550,35 @@ const OrderManager = {
       .subscribe();
   },
 
-  sendNotification(message) {
-    if ('serviceWorker' in navigator && 'Notification' in window && Notification.permission === 'granted') {
-      navigator.serviceWorker.ready.then(registration => {
-        registration.active.postMessage({
-          type: 'SHOW_NOTIFICATION',
-          title: '5G Eatery - New Order',
-          body: message,
-          icon: '/logo.png',
-          badge: '/logo.png',
-          tag: 'new-order'
-        });
-      });
+  async sendNotification(order) {
+    if (!('Notification' in window) || Notification.permission !== 'granted') return;
+
+    const options = {
+      body: `🍽️ New Order from Table ${order.table_number}! Tap to review.`,
+      icon: '/logo.png',
+      badge: '/logo.png',
+      tag: `order-${order?.id || Date.now()}`,
+      renotify: true,
+      requireInteraction: true,
+      vibrate: [200, 100, 200, 100, 400],
+      data: { orderId: order?.id, tableNumber: order?.table_number },
+      actions: [
+        { action: 'accept', title: '✅ Accept' },
+        { action: 'view',   title: '👁 View'   }
+      ]
+    };
+
+    try {
+      if ('serviceWorker' in navigator) {
+        const registration = await navigator.serviceWorker.ready;
+        await registration.showNotification('5G Eatery', options);
+      } else {
+        // Fallback for browsers without SW
+        new Notification('5G Eatery', options);
+      }
+    } catch (err) {
+      console.warn('Notification failed:', err);
+      // Silent fallback — toast already shown
     }
   },
 
@@ -563,9 +637,18 @@ const OrderManager = {
     setTimeout(() => printWindow.print(), 250);
   },
 
+  updateTimers() {
+    document.querySelectorAll('.order-time[data-created-at]').forEach(el => {
+        const createdAt = el.dataset.createdAt;
+        if (createdAt) {
+            el.textContent = this.timeSince(new Date(createdAt));
+        }
+    });
+  },
+
   timeSince(date) {
     const seconds = Math.floor((new Date() - date) / 1000);
-    if (seconds < 60) return 'just now';
+    if (seconds < 60) return `${seconds}s ago`;
     const minutes = Math.floor(seconds / 60);
     if (minutes < 60) return `${minutes}m ago`;
     const hours = Math.floor(minutes / 60);
@@ -946,7 +1029,8 @@ const Modal = {
         const preview = document.getElementById('imagePreview');
         preview.src = item.image_url;
         preview.classList.add('active');
-        document.getElementById('uploadPlaceholder').style.display = 'none';
+        const placeholder = document.querySelector('.upload-placeholder');
+        if (placeholder) placeholder.style.display = 'none';
       }
     }
 
@@ -1282,61 +1366,77 @@ document.addEventListener('DOMContentLoaded', () => {
   FileUpload.init();
   Auth.init();
 
-  // Set up search filter
   const search = document.getElementById('adminMenuSearch');
   if (search) {
     search.addEventListener('input', () => MenuManager.filter());
   }
 
-  // Auto-refresh orders
   setInterval(() => {
     if (state.currentTab === 'orders' && state.currentOrderTab === 'live') {
       OrderManager.fetchLive();
     }
   }, CONFIG.REFRESH_INTERVAL);
+
+  // Update timers every second for a "live" feel
+  setInterval(() => {
+    if (state.currentTab === 'orders' && state.currentOrderTab === 'live') {
+      OrderManager.updateTimers();
+    }
+  }, 1000);
 });
 
 // ==============================================================================
 // EXPOSE GLOBALS
+// Must be defined at parse time (not inside DOMContentLoaded) so that onclick
+// attributes in dynamically-rendered HTML can always resolve these names.
 // ==============================================================================
-window.showTab = (tab) => Dashboard.showTab(tab);
-window.showOrderTab = (tab) => Dashboard.showOrderTab(tab);
-window.filterHistory = (filter) => OrderManager.setFilter(filter);
-window.logout = () => Auth.logout();
-window.refreshAnalytics = () => AnalyticsManager.fetch();
-window.exportAnalytics = () => AnalyticsManager.export();
+window.showTab          = (tab)    => Dashboard.showTab(tab);
+window.showOrderTab     = (tab)    => Dashboard.showOrderTab(tab);
+window.filterHistory    = (filter) => OrderManager.setFilter(filter);
+window.logout           = ()       => Auth.logout();
+window.refreshAnalytics = ()       => AnalyticsManager.fetch();
+window.exportAnalytics  = ()       => AnalyticsManager.export();
 
-window.MenuManager = MenuManager;
-window.OrderManager = OrderManager;
-window.Modal = Modal;
-window.CategoryManager = CategoryManager;
+window.MenuManager      = MenuManager;
+window.OrderManager     = OrderManager;
+window.Modal            = Modal; // Exposing Modal for confirmDeleteHistory
+window.CategoryManager  = CategoryManager;
 
-// Add variant methods
-Modal.addVariantRow = Modal.addVariantRow;
-Modal.updateBasePriceVisibility = Modal.updateBasePriceVisibility;
-Modal.getVariantsFromUI = function() {
-  const rows = document.querySelectorAll('.variant-row');
-  return Array.from(rows).map(row => ({
-    id: row.querySelector('.variant-id')?.value || null,
-    name: row.querySelector('.variant-name')?.value.trim(),
-    price: parseFloat(row.querySelector('.variant-price')?.value)
-  })).filter(v => v.name && !isNaN(v.price));
-};
-
-window.addNewCategory = () => Modal.openCategory();
-window.closeCategoryModal = () => Modal.closeCategory();
-window.closeAdminModal = () => Modal.closeAll();
-window.closeConfirmModal = () => Modal.closeConfirm();
-window.deleteCategory = () => {
+window.addNewCategory    = ()    => Modal.openCategory();
+window.closeCategoryModal= ()    => Modal.closeCategory();
+window.closeAdminModal   = ()    => Modal.closeAll();
+window.closeConfirmModal = ()    => Modal.closeConfirm();
+window.deleteCategory    = ()    => {
   const name = document.getElementById('categoryInput')?.value.trim();
   if (name) CategoryManager.delete(name);
 };
 
-// Listen for actions from Service Worker (e.g. "Mark Completed" from notification)
+Modal.getVariantsFromUI = function () {
+  const rows = document.querySelectorAll('.variant-row');
+  return Array.from(rows).map(row => ({
+    id:    row.querySelector('.variant-id')?.value    || null,
+    name:  row.querySelector('.variant-name')?.value.trim(),
+    price: parseFloat(row.querySelector('.variant-price')?.value)
+  })).filter(v => v.name && !isNaN(v.price));
+};
+
+// Listen for actions from Service Worker
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.addEventListener('message', event => {
-    if (event.data && event.data.type === 'UPDATE_ORDER_STATUS') {
-      OrderManager.updateStatus(event.data.orderId, event.data.status);
+    const { type, orderId, status, action } = event.data || {};
+    if (type === 'UPDATE_ORDER_STATUS') {
+      OrderManager.updateStatus(orderId, status);
+    } else if (type === 'NOTIFICATION_ACTION') {
+      if (action === 'accept') {
+        OrderManager.updateStatus(orderId, 'preparing');
+        Toast.show('Order accepted from notification', 'success');
+      } else if (action === 'view') {
+        window.focus();
+        Dashboard.showTab('orders');
+      }
+    } else if (type === 'NOTIFICATION_CLICK') {
+      window.focus();
+      Dashboard.showTab('orders');
     }
   });
 }
