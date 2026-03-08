@@ -493,13 +493,10 @@ async function submitOrder(event) {
     const finalTotal = submittedCart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
     // 1. Create the order
-    // include user id if authenticated (allows anonymous inserts too)
-    const { data: { user } = {} } = await supabaseClient.auth.getUser();
     const orderPayload = {
       table_number: tableNumber,
       notes: notes,
-      status: 'pending',
-      ...(user ? { user_id: user.id } : {})
+      status: 'pending'
     };
 
     const { data: orderData, error: orderError } = await supabaseClient
