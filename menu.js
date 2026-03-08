@@ -42,6 +42,11 @@ async function initMenuPage() {
     await fetchMenuData();
     renderFilters();
     renderMenuItems();
+
+    // Check for standalone mode and request permission
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      requestNotificationPermission();
+    }
   } catch (error) {
     console.error('Menu initialization failed:', error);
     showNotification('Failed to load menu', 'error');
@@ -665,6 +670,22 @@ function showToast(message, type = 'info') {
   showNotification(message, type);
 }
 
+// Request notification permission
+async function requestNotificationPermission() {
+  if (!('Notification' in window)) return;
+  
+  if (Notification.permission === 'default') {
+    try {
+      const permission = await Notification.requestPermission();
+      if (permission === 'granted') {
+        showNotification('Notifications enabled for order updates', 'success');
+      }
+    } catch (err) {
+      console.warn('Permission request failed', err);
+    }
+  }
+}
+
 // Mobile menu toggle
 function toggleMobileMenu() {
   const navMenu = document.querySelector('.nav-menu');
@@ -686,6 +707,7 @@ document.addEventListener('beforeinstallprompt', (e) => {
       e.userChoice.then((choiceResult) => {
         if (choiceResult.outcome === 'accepted') {
           installBtn.style.display = 'none';
+          requestNotificationPermission();
         }
       });
     });
